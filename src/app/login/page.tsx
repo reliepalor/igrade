@@ -9,7 +9,7 @@ export default async function LoginPage({
   const { error } = await searchParams;
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50">
+    <div className="flex min-h-screen text-gray-800 items-center justify-center bg-gray-50">
       <div className="w-full max-w-sm space-y-6 rounded-lg border bg-white p-8 shadow-sm">
         <h1 className="text-2xl font-semibold text-center">Sign in to IGrade</h1>
 
@@ -19,7 +19,7 @@ export default async function LoginPage({
           </p>
         )}
 
-        <form action={loginWithCredentials} className="space-y-4">
+        <form action={loginWithCredentials} className="text-gray-700 space-y-4">
           <input
             type="email"
             name="email"

@@ -13,7 +13,7 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50">
+    <div className="flex text-gray-800 min-h-screen items-center justify-center bg-gray-50">
       <div className="w-full max-w-sm space-y-6 rounded-lg border bg-white p-8 shadow-sm">
         <h1 className="text-xl font-semibold text-center">I am a...</h1>
 
@@ -21,13 +21,13 @@ export default function OnboardingPage() {
           <div className="flex gap-3">
             <button
               onClick={() => setChoice("STUDENT")}
-              className="flex-1 rounded border py-2 hover:bg-gray-50"
+              className="flex-1 rounded border py-2 hover:bg-gray-50 cursor-pointer"
             >
               Student
             </button>
             <button
               onClick={() => setChoice("TEACHER")}
-              className="flex-1 rounded border py-2 hover:bg-gray-50"
+              className="flex-1 rounded border py-2 hover:bg-gray-50 cursor-pointer"
             >
               Teacher
             </button>

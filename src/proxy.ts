@@ -11,12 +11,10 @@ export default auth((req) => {
 
   const { onboardingCompleted, status, role } = session.user;
 
-  // Not onboarded yet -> force onboarding, unless already there
   if (!onboardingCompleted && pathname !== "/onboarding") {
     return NextResponse.redirect(new URL("/onboarding", req.url));
   }
 
-  // Teacher pending approval -> force pending page
   if (
     onboardingCompleted &&
     role === "TEACHER" &&
