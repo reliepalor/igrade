@@ -24,12 +24,12 @@ export default async function ApprovalsPage() {
             </div>
             <div className="flex gap-2">
               <form action={approve.bind(null, teacher.id)}>
-                <button className="rounded bg-black px-3 py-1 text-sm text-white">
+                <button className="rounded bg-black px-3 py-1 text-sm text-white cursor-pointer">
                   Approve
                 </button>
               </form>
               <form action={reject.bind(null, teacher.id)}>
-                <button className="rounded border px-3 py-1 text-sm">
+                <button className="rounded border px-3 py-1 text-sm cursor-pointer">
                   Reject
                 </button>
               </form>

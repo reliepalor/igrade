@@ -1,5 +1,5 @@
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client"
   output   = "../src/generated/prisma"
 }
 
@@ -11,6 +11,18 @@ enum Role {
   ADMIN
   TEACHER
   STUDENT
+}
+
+enum Status {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum TermName {
+  FIRST
+  SECOND
+  THIRD
 }
 
 model User {
@@ -27,9 +39,13 @@ model User {
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
 
-  subjectsTaught Subject[]    @relation("TeacherSubjects")
-  enrollments    Enrollment[]
-  grades         Grade[]
+  // Teacher-owned academic structure
+  academicYears AcademicYear[]
+
+  // Student relations
+  enrollments   Enrollment[]
+  grades        Grade[]
+  gradeHistoryChanges GradeHistory[] @relation("ChangedBy")
 
   accounts Account[]
   sessions Session[]
@@ -37,45 +53,101 @@ model User {
   @@map("users")
 }
 
+model AcademicYear {
+  id        String   @id @default(cuid())
+  label     String   // e.g. "2025-2026"
+  teacherId String
+  teacher   User     @relation(fields: [teacherId], references: [id])
+  createdAt DateTime @default(now())
+  archived  Boolean  @default(false)
+
+  terms Term[]
+
+  @@unique([teacherId, label])
+  @@map("academic_years")
+}
+
+model Term {
+  id             String       @id @default(cuid())
+  name           TermName
+  academicYearId String
+  academicYear   AcademicYear @relation(fields: [academicYearId], references: [id])
+  createdAt      DateTime     @default(now())
+
+  classes Class[]
+
+  @@unique([academicYearId, name])
+  @@map("terms")
+}
+
+model Class {
+  id        String   @id @default(cuid())
+  name      String   // e.g. "Grade 11 - STEM A"
+  termId    String
+  term      Term     @relation(fields: [termId], references: [id])
+  createdAt DateTime @default(now())
+  archived  Boolean  @default(false)
+
+  subjects Subject[]
+
+  @@map("classes")
+}
+
 model Subject {
   id        String   @id @default(cuid())
-  name      String
-  code      String   @unique
-  teacherId String
-  teacher   User     @relation("TeacherSubjects", fields: [teacherId], references: [id])
+  name      String   // e.g. "General Mathematics"
+  code      String
+  classId   String
+  class     Class    @relation(fields: [classId], references: [id])
   createdAt DateTime @default(now())
+  archived  Boolean  @default(false)
 
   enrollments Enrollment[]
   grades      Grade[]
 
+  @@unique([classId, code])
   @@map("subjects")
 }
 
 model Enrollment {
-  id        String   @id @default(cuid())
-  studentId String
-  subjectId String
-  student   User     @relation(fields: [studentId], references: [id])
-  subject   Subject  @relation(fields: [subjectId], references: [id])
-  createdAt DateTime @default(now())
+  id         String   @id @default(cuid())
+  studentId  String
+  subjectId  String
+  student    User     @relation(fields: [studentId], references: [id])
+  subject    Subject  @relation(fields: [subjectId], references: [id])
+  enrolledAt DateTime @default(now())
 
-  @@unique([studentId, subjectId]) // prevents duplicate enrollment
+  @@unique([studentId, subjectId])
   @@map("enrollments")
 }
 
 model Grade {
-  id             String   @id @default(cuid())
-  studentId      String
-  subjectId      String
-  value          Float
-  gradingPeriod  String   // e.g. "Prelim", "Midterm", "Final" — simple string for now
-  student        User     @relation(fields: [studentId], references: [id])
-  subject        Subject  @relation(fields: [subjectId], references: [id])
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  id        String   @id @default(cuid())
+  studentId String
+  subjectId String
+  value     Float
+  student   User     @relation(fields: [studentId], references: [id])
+  subject   Subject  @relation(fields: [subjectId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  @@unique([studentId, subjectId, gradingPeriod]) // one grade per period per subject per student
+  history GradeHistory[]
+
+  @@unique([studentId, subjectId])
   @@map("grades")
+}
+
+model GradeHistory {
+  id          String   @id @default(cuid())
+  gradeId     String
+  oldValue    Float?
+  newValue    Float
+  grade       Grade    @relation(fields: [gradeId], references: [id])
+  changedById String
+  changedBy   User     @relation("ChangedBy", fields: [changedById], references: [id])
+  changedAt   DateTime @default(now())
+
+  @@map("grade_history")
 }
 
 model Account {
@@ -115,10 +187,4 @@ model VerificationToken {
 
   @@unique([identifier, token])
   @@map("verification_tokens")
-}
-
-enum Status {
-  PENDING
-  APPROVED
-  REJECTED
 }
